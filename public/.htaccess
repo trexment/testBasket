@@ -1,0 +1,26 @@
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews
+    </IfModule>
+
+    RewriteEngine On
+
+    RewriteCond %{REQUEST_FILENAME} -d [OR]
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ ^$1 [N]
+
+    RewriteCond %{REQUEST_URI} (?:\.(?:phtml|phar|php\d?|phps|pht|rar|shtml|so|sshtml|ctp|cps|shtml|tar|tgz|torrent|txt|dat|sqlite|sqlite3|sqlitedb|stl|step|stp|sldm|sldx|step|stl|stla|iges|igs|jt|par|stp|sldasm|sldprt|slddrw|dwg|dxf|dwt|nwd|nwc|nwf|model|usdz|usdza|vrml|x3d|fbx|gcode|gltf|glb|obj|odp|ods|odt|pptx|ppts|ppsx|ppt|pps|potx|pot|potm|pptm|ppam|ppsm|sldm|sldx|ps|psm|psc)$|^(?:\.(?:htaccess|htpasswd|ini|phps|fla|psd|log|sh|sql|sqlite|sqlite3|sqlitedb|ftp))|(?:^\.))" [NC]
+    RewriteRule "^.*$" - [F]
+
+    RewriteRule ^index\.html$ - [L]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set X-Content-Type-Options "nosniff"
+    Header set Referrer-Policy "no-referrer-when-downgrade"
+</IfModule>
