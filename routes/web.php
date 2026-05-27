@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\QuestionController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -24,6 +25,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+
+    Route::prefix('/profile')->name('profile.')->group(function () {
+        Route::get('/', [ProfileController::class, 'show'])->name('show');
+        Route::get('/edit', [ProfileController::class, 'edit'])->name('edit');
+        Route::put('/update', [ProfileController::class, 'update'])->name('update');
+    });
 
     Route::prefix('/test')->name('test.')->group(function () {
         Route::get('/', [TestController::class, 'index'])->name('index');

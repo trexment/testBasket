@@ -18,19 +18,21 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     @auth
-                        <span class="text-gray-700">{{ Auth::user()->name }}</span>
+                        <a href="{{ route('profile.show') }}" class="text-gray-700 hover:text-blue-600 font-semibold">
+                            👤 {{ Auth::user()->name }}
+                        </a>
                         @if(Auth::user()->isAdmin())
                             <a href="{{ route('admin.questions.index') }}" class="text-blue-600 hover:text-blue-800">
-                                Admin
+                                ⚙️ Admin
                             </a>
                         @endif
                         <a href="{{ route('test.history') }}" class="text-gray-600 hover:text-gray-800">
-                            Historial
+                            📋 Historial
                         </a>
                         <form action="{{ route('logout') }}" method="POST" style="display:inline;">
                             @csrf
                             <button type="submit" class="text-red-600 hover:text-red-800">
-                                Salir
+                                🚪 Salir
                             </button>
                         </form>
                     @else
