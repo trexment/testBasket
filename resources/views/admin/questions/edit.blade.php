@@ -11,6 +11,21 @@
         @method('PUT')
 
         <div class="mb-6">
+            <label for="question_code" class="block text-gray-700 font-semibold mb-2">Código de Pregunta (opcional)</label>
+            <input
+                type="text"
+                id="question_code"
+                name="question_code"
+                value="{{ old('question_code', $question->question_code) }}"
+                class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                placeholder="Ej: ARB-F-001, OFI-M-002"
+            >
+            @error('question_code')
+                <span class="text-red-600 text-sm">{{ $message }}</span>
+            @enderror
+        </div>
+
+        <div class="mb-6">
             <label for="title" class="block text-gray-700 font-semibold mb-2">Título de la Pregunta</label>
             <input
                 type="text"
@@ -146,6 +161,32 @@
                     <span class="text-red-600 text-sm">{{ $message }}</span>
                 @enderror
             </div>
+        </div>
+
+        <div class="mb-6">
+            <label class="block text-gray-700 font-semibold mb-3">Tipos de Usuarios Aplicables</label>
+            <div class="space-y-2 bg-gray-50 p-4 rounded">
+                @foreach(['arbitro' => 'Árbitro', 'oficial' => 'Oficial de Mesa', 'entrenador' => 'Entrenador'] as $value => $label)
+                    @php
+                        $applicableRoles = old('applicable_roles', $question->applicable_roles ?? []);
+                        $isChecked = in_array($value, (array)$applicableRoles);
+                    @endphp
+                    <label class="flex items-center">
+                        <input
+                            type="checkbox"
+                            name="applicable_roles[]"
+                            value="{{ $value }}"
+                            {{ $isChecked ? 'checked' : '' }}
+                            class="mr-2"
+                        >
+                        <span>{{ $label }}</span>
+                    </label>
+                @endforeach
+            </div>
+            <p class="text-xs text-gray-600 mt-2">Deja en blanco para que todos los usuarios puedan acceder</p>
+            @error('applicable_roles')
+                <span class="text-red-600 text-sm">{{ $message }}</span>
+            @enderror
         </div>
 
         <div class="mb-8">

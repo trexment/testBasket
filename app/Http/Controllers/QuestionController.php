@@ -28,6 +28,7 @@ class QuestionController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'question_code' => 'nullable|string|max:50|unique:questions',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'option_a' => 'required|string',
@@ -38,6 +39,7 @@ class QuestionController extends Controller
             'explanation' => 'required|string',
             'category' => 'required|in:arbitro,oficial_mesa',
             'difficulty' => 'required|in:baja,media,alta',
+            'applicable_roles' => 'nullable|array',
             'reference' => 'nullable|string|max:255',
             'image' => 'nullable|image|max:2048',
         ]);
@@ -49,6 +51,7 @@ class QuestionController extends Controller
         }
 
         Question::create([
+            'question_code' => $validated['question_code'],
             'title' => $validated['title'],
             'description' => $validated['description'],
             'option_a' => $validated['option_a'],
@@ -59,11 +62,12 @@ class QuestionController extends Controller
             'explanation' => $validated['explanation'],
             'category' => $validated['category'],
             'difficulty' => $validated['difficulty'],
+            'applicable_roles' => $validated['applicable_roles'] ?? [],
             'reference' => $validated['reference'],
             'image_path' => $imagePath,
         ]);
 
-        return redirect()->route('questions.index')->with('success', 'Pregunta creada exitosamente');
+        return redirect()->route('admin.questions.index')->with('success', 'Pregunta creada exitosamente');
     }
 
     public function edit(Question $question)
@@ -74,6 +78,7 @@ class QuestionController extends Controller
     public function update(Request $request, Question $question)
     {
         $validated = $request->validate([
+            'question_code' => 'nullable|string|max:50|unique:questions,question_code,' . $question->id,
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'option_a' => 'required|string',
@@ -84,6 +89,7 @@ class QuestionController extends Controller
             'explanation' => 'required|string',
             'category' => 'required|in:arbitro,oficial_mesa',
             'difficulty' => 'required|in:baja,media,alta',
+            'applicable_roles' => 'nullable|array',
             'reference' => 'nullable|string|max:255',
             'image' => 'nullable|image|max:2048',
         ]);
@@ -97,9 +103,11 @@ class QuestionController extends Controller
             $data['image_path'] = $request->file('image')->store('questions', 'public');
         }
 
+        $data['applicable_roles'] = $validated['applicable_roles'] ?? [];
+
         $question->update($data);
 
-        return redirect()->route('questions.index')->with('success', 'Pregunta actualizada exitosamente');
+        return redirect()->route('admin.questions.index')->with('success', 'Pregunta actualizada exitosamente');
     }
 
     public function destroy(Question $question)
@@ -110,7 +118,7 @@ class QuestionController extends Controller
 
         $question->delete();
 
-        return redirect()->route('questions.index')->with('success', 'Pregunta eliminada exitosamente');
+        return redirect()->route('admin.questions.index')->with('success', 'Pregunta eliminada exitosamente');
     }
 
     public function toggleActive(Question $question)
