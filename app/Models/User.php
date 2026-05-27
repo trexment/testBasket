@@ -16,6 +16,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'user_type',
         'email_verified_at',
         'is_active',
     ];
@@ -44,5 +45,26 @@ class User extends Authenticatable
     public function isUser()
     {
         return $this->role === 'user';
+    }
+
+    public function getApplicableRoles()
+    {
+        // Map user_type to applicable roles for question filtering
+        $roleMap = [
+            'arbitro' => ['arbitro'],
+            'oficial' => ['oficial'],
+            'entrenador' => ['entrenador'],
+        ];
+        return $roleMap[$this->user_type] ?? [];
+    }
+
+    public function getUserTypeLabel()
+    {
+        $labels = [
+            'arbitro' => 'Árbitro',
+            'oficial' => 'Oficial de Mesa',
+            'entrenador' => 'Entrenador',
+        ];
+        return $labels[$this->user_type] ?? $this->user_type;
     }
 }

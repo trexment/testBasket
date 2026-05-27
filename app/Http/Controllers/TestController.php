@@ -22,27 +22,37 @@ class TestController extends Controller
 
     public function create()
     {
-        $arbitroCount = Question::where('category', 'arbitro')->where('is_active', true)->count();
-        $mesaCount = Question::where('category', 'oficial_mesa')->where('is_active', true)->count();
+        $user = Auth::user();
 
-        return view('test.create', compact('arbitroCount', 'mesaCount'));
+        // Get counts for each difficulty level for the user's type
+        $difficulties = Question::getDifficultyLevels();
+        $availableQuestions = [];
+
+        foreach ($difficulties as $difficulty) {
+            $availableQuestions[$difficulty] = Question::countAvailableByDifficulty($user->user_type, $difficulty);
+        }
+
+        return view('test.create', [
+            'user' => $user,
+            'availableQuestions' => $availableQuestions,
+            'difficulties' => $difficulties,
+        ]);
     }
 
     public function start(Request $request)
     {
         $validated = $request->validate([
             'num_questions' => 'required|integer|min:5|max:100',
-            'category' => 'required|in:arbitro,oficial_mesa,mixto',
             'difficulty' => 'nullable|array',
             'time_limit' => 'nullable|integer|min:15|max:180',
         ]);
 
         $numQuestions = $validated['num_questions'];
-        $category = $validated['category'];
-        $difficulty = $validated['difficulty'] ?? ['baja', 'media', 'alta'];
+        $difficulties = $validated['difficulty'] ?? ['baja', 'media', 'alta'];
         $timeLimit = $validated['time_limit'] ?? 45;
 
-        $questions = $this->getQuestions($numQuestions, $category, $difficulty);
+        // Get questions based on authenticated user's type
+        $questions = $this->getQuestions($numQuestions, Auth::user()->user_type, $difficulties);
 
         if ($questions->isEmpty()) {
             return back()->with('error', 'No hay suficientes preguntas con los filtros seleccionados');
@@ -54,8 +64,8 @@ class TestController extends Controller
             'total_questions' => count($questions),
             'correct_answers' => 0,
             'score_percentage' => 0,
-            'category_type' => $category,
-            'difficulty_filter' => implode(',', $difficulty),
+            'category_type' => Auth::user()->user_type,
+            'difficulty_filter' => implode(',', $difficulties),
             'time_limit_seconds' => $timeLimit,
         ]);
 
@@ -192,21 +202,18 @@ class TestController extends Controller
         return view('test.history', compact('attempts'));
     }
 
-    private function getQuestions($count, $category, $difficulty)
+    private function getQuestions($count, $userType, $difficulties)
     {
-        $query = Question::where('is_active', true);
+        $query = Question::where('is_active', true)
+            ->where(function ($q) use ($userType) {
+                $q->whereRaw("JSON_CONTAINS(applicable_roles, JSON_QUOTE(?))", [$userType])
+                  ->orWhereNull('applicable_roles');
+            })
+            ->whereIn('difficulty', $difficulties);
 
-        if ($category === 'arbitro') {
-            $query->where('category', 'arbitro');
-        } elseif ($category === 'oficial_mesa') {
-            $query->where('category', 'oficial_mesa');
-        }
-        // Si es 'mixto', no filtramos por categoría
-
-        $query->whereIn('difficulty', $difficulty);
-
-        if ($query->count() < $count) {
-            $count = $query->count();
+        $availableCount = $query->count();
+        if ($availableCount < $count) {
+            $count = $availableCount;
         }
 
         return $query->inRandomOrder()->limit($count)->get();
