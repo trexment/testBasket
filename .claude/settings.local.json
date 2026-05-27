@@ -6,7 +6,8 @@
       "Bash(git remote *)",
       "Bash(git add *)",
       "Bash(rm -f .git/index.lock)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(cd W:/26/CustionarioBaloncesto && rm -f .git/index.lock && git add . && git commit -m \"Initial commit - Complete Laravel app for FEB Basketball tests\" --no-verify)"
     ]
   }
 }
